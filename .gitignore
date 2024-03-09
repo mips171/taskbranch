@@ -7,7 +7,6 @@
 *.dll
 *.so
 *.dylib
-taskbranch
 
 # Test binary, built with `go test -c`
 *.test
@@ -48,3 +47,4 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+taskbranch
