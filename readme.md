@@ -30,16 +30,17 @@ In a simple use case, you might have a two-step process where the second task sh
 {
   "tasks": [
     {
-      "id": "upgrade",
-      "command": "echo upgrading >> test.out",
+      "id": "task1",
+      "command": "echo 'Performing task 1'",
       "dependsOn": []
     },
     {
-      "id": "reboot",
-      "command": "echo rebooting >> test.out",
-      "dependsOn": ["upgrade"]
+      "id": "task2",
+      "command": "echo 'Performing task 2'",
+      "dependsOn": ["task1"]
     }
-  ]
+  ],
+  "dryRun": false
 }
 ``` 
 
