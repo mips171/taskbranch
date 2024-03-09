@@ -1,0 +1,27 @@
+{
+    "tasks": [
+        {
+            "id": "checkConfigExists",
+            "condition": {
+                "checkCommand": "test -f /path/to/config.file",
+                "expectedOutcome": ""
+            },
+            "dependsOn": []
+        },
+        {
+            "id": "upgrade",
+            "command": "echo upgrading >> test.out",
+            "dependsOn": [
+                "checkConfigExists"
+            ],
+            "executeIf": "conditionFailed"
+        },
+        {
+            "id": "reboot",
+            "command": "echo rebooting >> test.out",
+            "dependsOn": [
+                "upgrade"
+            ]
+        }
+    ]
+}
