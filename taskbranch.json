@@ -1,27 +1,28 @@
 {
+    "dryRun": false,
     "tasks": [
-        {
-            "id": "checkConfigExists",
-            "condition": {
-                "checkCommand": "test -f /path/to/config.file",
-                "expectedOutcome": ""
-            },
-            "dependsOn": []
+      {
+        "id": "checkVimInstalled",
+        "condition": {
+          "checkCommand": "vim --version",
+          "expectedOutcome": "",
+          "strategy": "OSCommandStrategy"
         },
-        {
-            "id": "upgrade",
-            "command": "echo upgrading >> test.out",
-            "dependsOn": [
-                "checkConfigExists"
-            ],
-            "executeIf": "conditionFailed"
-        },
-        {
-            "id": "reboot",
-            "command": "echo rebooting >> test.out",
-            "dependsOn": [
-                "upgrade"
-            ]
-        }
+        "strategy": "OSCommandStrategy",
+        "dependsOn": []
+      },
+      {
+        "id": "installVim",
+        "command": "sudo dnf -y install vim",
+        "dependsOn": ["checkVimInstalled"],
+        "executeIf": "conditionFailed",
+        "strategy": "OSCommandStrategy"
+      },
+      {
+        "id": "printVimVersion",
+        "command": "vim --version",
+        "dependsOn": ["installVim"],
+        "strategy": "OSCommandStrategy"
+      }
     ]
-}
+  }

@@ -6,16 +6,18 @@ import (
 )
 
 type Condition struct {
-	CheckCommand    string `json:"checkCommand"`
-	ExpectedOutcome string `json:"expectedOutcome"`
+	CheckCommand    string            `json:"checkCommand"`
+	ExpectedOutcome string            `json:"expectedOutcome"`
+	Strategy        ExecutionStrategy `json:"-"`
 }
 
 type Task struct {
-	DependsOn []string   `json:"dependsOn"`
-	ID        string     `json:"id"`
-	Command   string     `json:"command"`
-	ExecuteIf string     `json:"executeIf"`
-	Condition *Condition `json:"condition"`
+	DependsOn []string          `json:"dependsOn"`
+	ID        string            `json:"id"`
+	Command   string            `json:"command"`
+	ExecuteIf string            `json:"executeIf"`
+	Condition *Condition        `json:"condition"`
+	Strategy  ExecutionStrategy `json:"-"`
 }
 
 type TasksContainer struct {

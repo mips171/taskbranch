@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"os/exec"
 	"strings"
 	"taskbranch/tasks"
 
@@ -126,55 +125,23 @@ func printTask(task tasks.Task, prefix string, isLast bool, tasks []tasks.Task) 
 }
 
 func createTaskNode(task tasks.Task, dryRun bool) *beetea.ActionNode {
-    return beetea.NewAction(func() beetea.Status {
+	// Ensure there is a default strategy if none is specified
+	if task.Strategy == nil {
+		task.Strategy = &tasks.OSCommandStrategy{}
+	}
 
-		if task.ExecuteIf != "" {
-            if dryRun {
-                fmt.Printf("[DRY RUN] Would check executeIf condition: %s\n", task.ExecuteIf)
-            } else {
-                fmt.Println("Checking executeIf condition:", task.ExecuteIf)
-                cmd := exec.Command("sh", "-c", task.ExecuteIf)
-                if err := cmd.Run(); err != nil {
-                    // If the executeIf command fails, skip this task
-                    fmt.Printf("executeIf condition not met for task %s: %v\n", task.ID, err)
-                    return beetea.Failure // Or another status indicating skipped due to condition
-                }
-            }
-        }
-
-        if dryRun {
-            fmt.Printf("[DRY RUN] Would execute: %s\n", task.Command)
-            return beetea.Success
-        }
-
-        fmt.Println("Executing:", task.Command)
-        cmd := exec.Command("sh", "-c", task.Command)
-        if err := cmd.Run(); err != nil {
-            fmt.Printf("Error executing task %s: %v\n", task.ID, err)
-            return beetea.Failure
-        }
-        return beetea.Success
-    })
+	return beetea.NewAction(func() beetea.Status {
+		return task.Strategy.Execute(task, dryRun)
+	})
 }
 
 func createConditionNode(condition *tasks.Condition, dryRun bool) *beetea.ConditionNode {
-    return beetea.NewCondition(func() bool {
-        if dryRun {
-            fmt.Println("[DRY RUN] Checking condition:", condition.CheckCommand)
-            return true
-        }
-        fmt.Println("Checking condition:", condition.CheckCommand)
-        cmd := exec.Command("sh", "-c", condition.CheckCommand)
-        output, err := cmd.CombinedOutput()
-        if err != nil {
-            if e, ok := err.(*exec.Error); ok && e.Err == exec.ErrNotFound {
-                fmt.Printf("Condition command not found: %s, treating as failure to satisfy condition\n", condition.CheckCommand)
-                // handle the 'command not found' case differently
-                return false
-            }
-            fmt.Printf("Condition check failed: %s, Output: %s\n", err, output)
-            return false
-        }
-        return strings.TrimSpace(string(output)) == condition.ExpectedOutcome
-    })
+	// Ensure there is a default strategy if none is specified
+	if condition.Strategy == nil {
+		condition.Strategy = &tasks.OSCommandStrategy{}
+	}
+
+	return beetea.NewCondition(func() bool {
+		return condition.Strategy.CheckCondition(*condition, dryRun)
+	})
 }
