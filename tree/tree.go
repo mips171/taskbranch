@@ -130,15 +130,15 @@ func createTaskNode(task tasks.Task, dryRun bool) *beetea.ActionNode {
 		if dryRun {
 			fmt.Printf("[DRY RUN] Would execute: %s\n", task.Command)
 			return beetea.Success
-		} else {
-			fmt.Println("Executing:", task.Command)
-			cmd := exec.Command("sh", "-c", task.Command)
-			if err := cmd.Run(); err != nil {
-				fmt.Printf("Error executing task %s: %v\n", task.ID, err)
-				return beetea.Failure
-			}
-			return beetea.Success
 		}
+
+		fmt.Println("Executing:", task.Command)
+		cmd := exec.Command("sh", "-c", task.Command)
+		if err := cmd.Run(); err != nil {
+			fmt.Printf("Error executing task %s: %v\n", task.ID, err)
+			return beetea.Failure
+		}
+		return beetea.Success
 	})
 }
 
@@ -158,4 +158,3 @@ func createConditionNode(condition *tasks.Condition, dryRun bool) *beetea.Condit
 		return strings.TrimSpace(string(output)) == condition.ExpectedOutcome
 	})
 }
-
