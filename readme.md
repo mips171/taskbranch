@@ -3,7 +3,7 @@
 
 ### Documentation
 
-TaskBranch simplifies task management, especially for workflows requiring tasks to be executed in a specific order based on dependencies. By leveraging behavior trees, TaskBranch ensures tasks are executed in accordance with their defined dependencies, and can react to conditions, making it ideal for automating complex workflows.
+TaskBranch simplifies task management, especially for workflows requiring tasks to be executed in a specific order based on dependencies. By leveraging behavior trees, TaskBranch ensures tasks are executed in accordance with their defined dependencies, and can react to conditions, making it ideal for automating complex workflows. These workflows can include system administration, but can also be used to automate workflows or tasks on any computer system. Thanks to cross-compilation support by Go, you can run TaskBranch natively on your architecture.
 
 ### Configuration
 
