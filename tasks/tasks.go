@@ -11,9 +11,9 @@ type Condition struct {
 }
 
 type Task struct {
+	DependsOn []string   `json:"dependsOn"`
 	ID        string     `json:"id"`
 	Command   string     `json:"command"`
-	DependsOn []string   `json:"dependsOn"`
 	Condition *Condition `json:"condition"`
 }
 
