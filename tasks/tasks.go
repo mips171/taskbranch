@@ -14,6 +14,7 @@ type Task struct {
 	DependsOn []string   `json:"dependsOn"`
 	ID        string     `json:"id"`
 	Command   string     `json:"command"`
+	ExecuteIf string     `json:"executeIf"`
 	Condition *Condition `json:"condition"`
 }
 

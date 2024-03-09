@@ -127,6 +127,21 @@ func printTask(task tasks.Task, prefix string, isLast bool, tasks []tasks.Task) 
 
 func createTaskNode(task tasks.Task, dryRun bool) *beetea.ActionNode {
     return beetea.NewAction(func() beetea.Status {
+
+		if task.ExecuteIf != "" {
+            if dryRun {
+                fmt.Printf("[DRY RUN] Would check executeIf condition: %s\n", task.ExecuteIf)
+            } else {
+                fmt.Println("Checking executeIf condition:", task.ExecuteIf)
+                cmd := exec.Command("sh", "-c", task.ExecuteIf)
+                if err := cmd.Run(); err != nil {
+                    // If the executeIf command fails, skip this task
+                    fmt.Printf("executeIf condition not met for task %s: %v\n", task.ID, err)
+                    return beetea.Failure // Or another status indicating skipped due to condition
+                }
+            }
+        }
+
         if dryRun {
             fmt.Printf("[DRY RUN] Would execute: %s\n", task.Command)
             return beetea.Success
@@ -135,11 +150,6 @@ func createTaskNode(task tasks.Task, dryRun bool) *beetea.ActionNode {
         fmt.Println("Executing:", task.Command)
         cmd := exec.Command("sh", "-c", task.Command)
         if err := cmd.Run(); err != nil {
-            if e, ok := err.(*exec.Error); ok && e.Err == exec.ErrNotFound {
-                fmt.Printf("Command not found %s: %v\n", task.ID, err)
-                // Handle the 'command not found' error specifically.
-                return beetea.Warning
-            }
             fmt.Printf("Error executing task %s: %v\n", task.ID, err)
             return beetea.Failure
         }

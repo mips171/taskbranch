@@ -1,28 +1,21 @@
 {
-    "dryRun": true,
+    "dryRun": false,
     "tasks": [
         {
             "id": "checkConfigExists",
             "condition": {
-                "checkCommand": "test -f /path/to/config.file",
-                "expectedOutcome": ""
+                "checkCommand": "vim --version",
+                "expectedOutcome": "123"
             },
             "dependsOn": []
         },
         {
             "id": "upgrade",
-            "command": "echo upgrading >> test.out",
+            "command": "sudo dnf -y install vim",
             "dependsOn": [
                 "checkConfigExists"
             ],
             "executeIf": "conditionFailed"
-        },
-        {
-            "id": "reboot",
-            "command": "echo rebooting >> test.out",
-            "dependsOn": [
-                "upgrade"
-            ]
         }
     ]
 }
