@@ -2,14 +2,37 @@
     "dryRun": false,
     "tasks": [
       {
-        "id": "checkVimInstalled",
+        "id": "checkConfigFile",
         "condition": {
-          "checkCommand": "vim --version",
+          "checkCommand": "test -f ~/developer_setup.conf",
           "expectedOutcome": "",
           "strategy": "OSCommandStrategy"
         },
         "strategy": "OSCommandStrategy",
         "dependsOn": []
+      },
+      {
+        "id": "createConfigFile",
+        "command": "touch ~/developer_setup.conf",
+        "dependsOn": ["checkConfigFile"],
+        "executeIf": "conditionFailed",
+        "strategy": "OSCommandStrategy"
+      },
+      {
+        "id": "writeDefaultSettings",
+        "command": "echo 'export PATH=$PATH:~/bin' >> ~/developer_setup.conf && echo 'alias ll=\"ls -l\"' >> ~/developer_setup.conf",
+        "dependsOn": ["createConfigFile"],
+        "strategy": "OSCommandStrategy"
+      },
+      {
+        "id": "checkVimInstalled",
+        "condition": {
+          "checkCommand": "vim --version | head -1",
+          "expectedOutcome": "VIM - Vi IMproved",
+          "strategy": "OSCommandStrategy"
+        },
+        "strategy": "OSCommandStrategy",
+        "dependsOn": ["writeDefaultSettings"]
       },
       {
         "id": "installVim",
@@ -20,8 +43,15 @@
       },
       {
         "id": "printVimVersion",
-        "command": "vim --version",
-        "dependsOn": ["installVim"],
+        "command": "vim --version > ~/vim_version.log",
+        "dependsOn": ["checkVimInstalled"],
+        "executeIf": "conditionSucceeded",
+        "strategy": "OSCommandStrategy"
+      },
+      {
+        "id": "printSetupComplete",
+        "command": "echo 'Developer environment setup complete.' >> ~/setup.log",
+        "dependsOn": ["writeDefaultSettings", "printVimVersion"],
         "strategy": "OSCommandStrategy"
       }
     ]
