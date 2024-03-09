@@ -1,4 +1,4 @@
-A behavior-tree oriented system administration tool
+## Behavior-tree-oriented system administration tool
 
 
 ### Documentation
