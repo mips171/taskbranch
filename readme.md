@@ -91,3 +91,32 @@ taskbranch -file path/to/your/tasks.json
 ```
 If the `-file` flag is omitted, TaskBranch will default to using `taskbranch.json` in the current directory.
 
+```sh
+taskbranch -print
+```
+If the `-print` flag is given, TaskBranch will print a tree structure of the tasks.
+
+```
+Tasks:
+└─── ID: checkConfigExists
+        Condition:
+            Check Command: test -f /path/to/config.file
+            Expected Outcome: 
+└─── ID: upgrade
+        Command: echo upgrading >> test.out
+        Depends On: checkConfigExists
+    └─── ID: checkConfigExists
+            Condition:
+                Check Command: test -f /path/to/config.file
+                Expected Outcome: 
+└─── ID: reboot
+        Command: echo rebooting >> test.out
+        Depends On: upgrade
+    └─── ID: upgrade
+            Command: echo upgrading >> test.out
+            Depends On: checkConfigExists
+        └─── ID: checkConfigExists
+                Condition:
+                    Check Command: test -f /path/to/config.file
+                    Expected Outcome: 
+```
