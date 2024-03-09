@@ -26,17 +26,31 @@ import (
 //   - A beetea.Node representing the root node of the behavior tree.
 func BuildBehaviorTree(tasks []tasks.Task, dryRun bool) beetea.Node {
 	taskNodes := make(map[string]beetea.Node)
+	conditionResults := make(map[string]bool)
 
+	// Step 1: Evaluate all conditions and populate conditionResults
+	for _, task := range tasks {
+		if task.Condition != nil {
+			// Assuming CheckCondition is a method that evaluates the condition and returns true or false
+			result := task.Condition.Strategy.CheckCondition(*task.Condition, dryRun)
+			conditionResults[task.ID] = result
+		}
+	}
+
+	// Step 2: Use conditionResults when creating task nodes
 	for _, task := range tasks {
 		if task.Condition != nil {
 			conditionNode := createConditionNode(task.Condition, dryRun)
-			actionNode := createTaskNode(task, dryRun)
+
+			actionNode := createTaskNode(task, dryRun, conditionResults)
 			seq := beetea.NewSequence(conditionNode, actionNode)
 			taskNodes[task.ID] = seq
 		} else {
-			taskNodes[task.ID] = createTaskNode(task, dryRun)
+			// Tasks without conditions also need conditionResults for dependencies that might have conditions
+			taskNodes[task.ID] = createTaskNode(task, dryRun, conditionResults)
 		}
 	}
+
 	var sequences []*beetea.Sequence
 
 	for _, task := range tasks {
@@ -124,14 +138,20 @@ func printTask(task tasks.Task, prefix string, isLast bool, tasks []tasks.Task) 
 	}
 }
 
-func createTaskNode(task tasks.Task, dryRun bool) *beetea.ActionNode {
-	// Ensure there is a default strategy if none is specified
+func createTaskNode(task tasks.Task, dryRun bool, conditionResults map[string]bool) *beetea.ActionNode {
 	if task.Strategy == nil {
 		task.Strategy = &tasks.OSCommandStrategy{}
 	}
 
 	return beetea.NewAction(func() beetea.Status {
-		return task.Strategy.Execute(task, dryRun)
+		if shouldExecuteTask(task, conditionResults) {
+			return task.Strategy.Execute(task, dryRun)
+		}
+
+		if !dryRun {
+			fmt.Printf("Skipping task %s due to ExecuteIf logic\n", task.ID)
+		}
+		return beetea.Success
 	})
 }
 
@@ -144,4 +164,25 @@ func createConditionNode(condition *tasks.Condition, dryRun bool) *beetea.Condit
 	return beetea.NewCondition(func() bool {
 		return condition.Strategy.CheckCondition(*condition, dryRun)
 	})
+}
+
+func shouldExecuteTask(task tasks.Task, conditionResults map[string]bool) bool {
+	if task.ExecuteIf == "" || task.Condition == nil {
+		return true
+	}
+
+	conditionPassed, exists := conditionResults[task.ID]
+	if !exists {
+		// Condition result does not exist; decision could default to true or false depending on requirements
+		return true
+	}
+
+	switch task.ExecuteIf {
+	case "conditionFailed":
+		return !conditionPassed
+	case "conditionSucceeded":
+		return conditionPassed
+	default:
+		return true
+	}
 }
